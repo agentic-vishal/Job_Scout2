@@ -1,0 +1,16 @@
+[
+  {
+    "saved_at": "2026-08-01T00:52:46+00:00",
+    "company": "Company Name",
+    "role": "Machine Learning Engineer",
+    "fit_score": 50,
+    "notes": "Application submitted despite gaps in neural networks, deployment, and NLP experience. Interested in professional growth in these areas."
+  },
+  {
+    "saved_at": "2026-08-01T02:35:44+00:00",
+    "company": "Not specified",
+    "role": "Machine Learning Engineer",
+    "fit_score": 30,
+    "notes": "Strong background in Python but lacks critical experience in machine learning and NLP."
+  }
+]

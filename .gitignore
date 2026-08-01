@@ -1,0 +1,8 @@
+.env
+.venv/
+.vscode/
+__pycache__/
+*.py[cod]
+.DS_Store
+.streamlit/secrets.toml
+PARTH-NOTES.md
