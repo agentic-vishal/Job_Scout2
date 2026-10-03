@@ -136,7 +136,7 @@
         report.textContent = "Scout is researching the company and preparing your application brief.";
 
         try {
-          const response = await fetch("/api/scout", {
+          const response = await fetch("/api", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

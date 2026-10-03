@@ -211,8 +211,8 @@ OPENAI_MODEL=gpt-4.1-mini
 SCOUT_ACCESS_PASSWORD=choose-a-login-password
 ```
 
-The Vercel entry page is `index.html`, and `/api/scout` is routed to the
-FastAPI function by `vercel.json`. The current tracker is copied to `/tmp`, so
+The Vercel entry page is `index.html`, and `/api` is served by the FastAPI
+function. The current tracker is copied to `/tmp`, so
 it is only a warm-instance demo cache and can disappear between invocations.
 Use a database or external storage before relying on application history.
 
