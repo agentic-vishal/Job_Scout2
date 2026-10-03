@@ -201,6 +201,21 @@ For Railway:
 `railway.json` supplies the start command and health check. Cloud filesystems
 are ephemeral, so replace the JSON tracker with durable storage for production.
 
+For Vercel, use the `Job_Scout` directory as the project root. Vercel runs the
+FastAPI function in `api/index.py`; it does not run the Streamlit process. Set
+these project environment variables in Vercel for Preview and Production:
+
+```env
+OPENAI_API_KEY=your-key
+OPENAI_MODEL=gpt-4.1-mini
+SCOUT_ACCESS_PASSWORD=choose-a-login-password
+```
+
+The Vercel entry page is `index.html`, and `/api/scout` is routed to the
+FastAPI function by `vercel.json`. The current tracker is copied to `/tmp`, so
+it is only a warm-instance demo cache and can disappear between invocations.
+Use a database or external storage before relying on application history.
+
 ## Troubleshooting
 
 | Symptom | Fix |

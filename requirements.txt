@@ -1,5 +1,6 @@
 beautifulsoup4==4.15.0
 ddgs==9.14.4
+fastapi>=0.115,<1.0
 httpx==0.28.1
 langchain-mcp-adapters==0.3.1
 langchain-openai==1.4.1

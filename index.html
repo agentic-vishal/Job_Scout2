@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f2f4ed">
+    <title>Scout | Job Hunt Co-pilot</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #182923;
+        --muted: #64746d;
+        --paper: #f2f4ed;
+        --panel: #fffefa;
+        --line: #d7ded4;
+        --green: #216b50;
+        --red: #a43f2d;
+        font-family: "Segoe UI", sans-serif;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        background: var(--paper);
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 1.35rem 2rem;
+        border-bottom: 1px solid var(--line);
+      }
+      .brand { font: 700 1.25rem Georgia, serif; }
+      .brand-mark { color: var(--green); }
+      .route { color: var(--muted); font-size: .72rem; letter-spacing: .12em; }
+      main {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(300px, .85fr);
+        gap: clamp(2rem, 6vw, 5.5rem);
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: clamp(2.5rem, 8vh, 5.5rem) 2rem 4rem;
+      }
+      h1 {
+        max-width: 550px;
+        margin: .65rem 0 1rem;
+        font: 400 clamp(2.8rem, 7vw, 5.4rem)/.98 Georgia, serif;
+      }
+      .intro { max-width: 420px; color: var(--muted); line-height: 1.65; }
+      .kicker { color: var(--green); font-size: .74rem; font-weight: 700; letter-spacing: .15em; }
+      form { display: grid; gap: .9rem; margin-top: 2.4rem; }
+      label { font-size: .88rem; font-weight: 650; }
+      textarea, input {
+        width: 100%;
+        border: 1px solid #bdc9bf;
+        border-radius: 4px;
+        background: var(--panel);
+        color: var(--ink);
+        font: inherit;
+      }
+      textarea { min-height: 220px; padding: 1rem; resize: vertical; line-height: 1.5; }
+      input { padding: .8rem .9rem; }
+      textarea:focus, input:focus { outline: 2px solid #78a48b; outline-offset: 1px; }
+      button {
+        width: fit-content;
+        min-height: 46px;
+        padding: .75rem 1.2rem;
+        border: 0;
+        border-radius: 4px;
+        background: var(--green);
+        color: white;
+        font: inherit;
+        font-weight: 650;
+        cursor: pointer;
+      }
+      button:disabled { cursor: wait; opacity: .65; }
+      .security-note { color: var(--muted); font-size: .78rem; line-height: 1.5; }
+      .result {
+        min-height: 300px;
+        padding: 1.4rem;
+        border-top: 3px solid var(--green);
+        background: var(--panel);
+      }
+      .result h2 { margin: 0 0 1rem; font: 400 1.6rem Georgia, serif; }
+      pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: .9rem/1.65 "Segoe UI", sans-serif; }
+      .error { color: var(--red); font-size: .9rem; }
+      .hidden { display: none; }
+      @media (max-width: 760px) {
+        header { padding-inline: 1.2rem; }
+        .route { max-width: 150px; text-align: right; line-height: 1.5; }
+        main { grid-template-columns: 1fr; padding: 2.5rem 1.2rem; }
+        h1 { font-size: 3.4rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand"><span class="brand-mark">◎</span> Scout</div>
+      <div class="route">RESEARCH / MATCH / DRAFT / TRACK</div>
+    </header>
+    <main>
+      <section>
+        <div class="kicker">JOB HUNT CO-PILOT</div>
+        <h1>Find the signal in every role.</h1>
+        <p class="intro">Scout researches the company, compares the role with your resume, and drafts a focused application.</p>
+        <form id="scout-form">
+          <label for="job">Job description or posting URL</label>
+          <textarea id="job" name="job" maxlength="20000" required placeholder="Paste a full role description or a public job-post URL"></textarea>
+          <label for="password">App access password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+          <button id="submit" type="submit">Scout this role</button>
+          <p class="security-note">The access password is sent only to this app's API. Do not use a password shared with another account.</p>
+        </form>
+        <p id="error" class="error" role="alert"></p>
+      </section>
+      <section id="result" class="result" aria-live="polite">
+        <h2 id="result-title">Your application brief</h2>
+        <pre id="report">Your research and tailored application will appear here.</pre>
+      </section>
+    </main>
+    <script>
+      const form = document.querySelector("#scout-form");
+      const submit = document.querySelector("#submit");
+      const error = document.querySelector("#error");
+      const report = document.querySelector("#report");
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        error.textContent = "";
+        submit.disabled = true;
+        submit.textContent = "Researching the role...";
+        report.textContent = "Scout is researching the company and preparing your application brief.";
+
+        try {
+          const response = await fetch("/api/scout", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Scout-Password": document.querySelector("#password").value,
+            },
+            body: JSON.stringify({ job: document.querySelector("#job").value }),
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.detail || "Scout could not complete the request.");
+          report.textContent = result.report;
+          document.querySelector("#result-title").textContent = "Application brief ready";
+        } catch (requestError) {
+          error.textContent = requestError.message;
+          report.textContent = "Your report will appear here when the request succeeds.";
+        } finally {
+          submit.disabled = false;
+          submit.textContent = "Scout this role";
+        }
+      });
+    </script>
+  </body>
+</html>

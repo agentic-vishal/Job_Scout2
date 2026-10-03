@@ -1,5 +1,6 @@
 import ipaddress
 import json
+import os
 import socket
 from datetime import datetime, timezone
 from pathlib import Path
@@ -12,7 +13,7 @@ from mcp.server.fastmcp import FastMCP
 
 
 ROOT = Path(__file__).resolve().parent
-TRACKER = ROOT / "applications.json"
+TRACKER = Path(os.getenv("SCOUT_TRACKER_PATH", ROOT / "applications.json"))
 mcp = FastMCP("Scout")
 
 
