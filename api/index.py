@@ -7,8 +7,8 @@ import tempfile
 from pathlib import Path
 
 from fastapi import FastAPI, Header, HTTPException
-from pydantic import BaseModel, Field
 from fastapi.responses import FileResponse
+from pydantic import BaseModel, Field
 
 from agent import scout
 
@@ -28,6 +28,7 @@ async def homepage():
 
 
 @app.post("/")
+@app.post("/api", include_in_schema=False)
 async def scout_role(
     payload: ScoutRequest,
     x_scout_password: str | None = Header(default=None),
