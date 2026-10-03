@@ -58,6 +58,24 @@ class ScoutTests(unittest.TestCase):
 
 
 class MCPTests(unittest.IsolatedAsyncioTestCase):
+    async def test_vercel_agent_uses_tools_in_process(self):
+        class FakeModel:
+            def bind_tools(self, tools, **kwargs):
+                self.tools = tools
+                return self
+
+            async def ainvoke(self, messages):
+                return AIMessage(content="Application pack ready")
+
+        with (
+            patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "VERCEL": "1"}),
+            patch.object(agent, "ChatOpenAI", return_value=FakeModel()),
+            patch.object(agent, "MultiServerMCPClient", side_effect=AssertionError("MCP subprocess should not start")),
+        ):
+            result = await agent.scout("Python engineer at Acme", trace=None)
+
+        self.assertEqual(result, "Application pack ready")
+
     async def test_agent_requires_openai_key(self):
         with patch.dict(os.environ, {"OPENAI_API_KEY": ""}):
             with self.assertRaisesRegex(RuntimeError, "OPENAI_API_KEY"):

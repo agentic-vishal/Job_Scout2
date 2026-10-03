@@ -57,6 +57,22 @@ def build_graph(model, tools, trace: Callable[[str], None] | None = print):
     return graph.compile()
 
 
+def vercel_tools():
+    from langchain_core.tools import StructuredTool
+
+    import mcp_server
+
+    return [
+        StructuredTool.from_function(func=function)
+        for function in (
+            mcp_server.web_search,
+            mcp_server.fetch_url,
+            mcp_server.get_resume,
+            mcp_server.save_application,
+        )
+    ]
+
+
 def message_text(message) -> str:
     if isinstance(message.content, str):
         return message.content
@@ -79,23 +95,30 @@ async def scout(
         model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
         timeout=60,
     )
-    client = MultiServerMCPClient(
-        {
-            "scout": {
-                "transport": "stdio",
-                "command": sys.executable,
-                "args": [str(ROOT / "mcp_server.py")],
-            }
-        }
-    )
-
-    async with client.session("scout") as session:
-        tools = await load_mcp_tools(session)
-        graph = build_graph(model, tools, trace)
+    if os.getenv("VERCEL"):
+        graph = build_graph(model, vercel_tools(), trace)
         result = await graph.ainvoke(
             {"messages": [("user", f"Assess this role:\n\n{job_description}")]},
             {"recursion_limit": 20},
         )
+    else:
+        client = MultiServerMCPClient(
+            {
+                "scout": {
+                    "transport": "stdio",
+                    "command": sys.executable,
+                    "args": [str(ROOT / "mcp_server.py")],
+                }
+            }
+        )
+
+        async with client.session("scout") as session:
+            tools = await load_mcp_tools(session)
+            graph = build_graph(model, tools, trace)
+            result = await graph.ainvoke(
+                {"messages": [("user", f"Assess this role:\n\n{job_description}")]},
+                {"recursion_limit": 20},
+            )
 
     return message_text(result["messages"][-1]) or "Scout did not return a final response."
 
