@@ -8,6 +8,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel, Field
+from fastapi.responses import FileResponse
 
 from agent import scout
 
@@ -19,6 +20,11 @@ app = FastAPI(title="Scout API")
 
 class ScoutRequest(BaseModel):
     job: str = Field(min_length=1, max_length=20_000)
+
+
+@app.get("/", include_in_schema=False)
+async def homepage():
+    return FileResponse(ROOT / "index.html", media_type="text/html")
 
 
 @app.post("/")
