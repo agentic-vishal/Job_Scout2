@@ -68,7 +68,7 @@ class MCPTests(unittest.IsolatedAsyncioTestCase):
                 return AIMessage(content="Application pack ready")
 
         with (
-            patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "VERCEL": "1"}),
+            patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "VERCEL_ENV": "production"}),
             patch.object(agent, "ChatOpenAI", return_value=FakeModel()),
             patch.object(agent, "MultiServerMCPClient", side_effect=AssertionError("MCP subprocess should not start")),
         ):

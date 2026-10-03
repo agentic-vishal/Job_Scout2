@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import os
 import secrets
 import shutil
@@ -16,6 +17,7 @@ from agent import scout
 ROOT = Path(__file__).resolve().parents[1]
 TRACKER = Path(tempfile.gettempdir()) / "job-scout-applications.json"
 app = FastAPI(title="Scout API")
+logger = logging.getLogger(__name__)
 
 
 class ScoutRequest(BaseModel):
@@ -50,7 +52,11 @@ async def scout_role(
     try:
         report = await scout(payload.job.strip(), trace=None)
     except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Scout failed: {exc}") from exc
+        logger.exception("Scout invocation failed")
+        cause = exc
+        while isinstance(cause, ExceptionGroup) and cause.exceptions:
+            cause = cause.exceptions[0]
+        raise HTTPException(status_code=502, detail=f"Scout failed: {cause}") from exc
 
     applications = json.loads(TRACKER.read_text(encoding="utf-8"))
     return {"report": report, "applications": applications}

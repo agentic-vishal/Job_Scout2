@@ -95,7 +95,7 @@ async def scout(
         model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
         timeout=60,
     )
-    if os.getenv("VERCEL"):
+    if os.getenv("VERCEL") or os.getenv("VERCEL_ENV"):
         graph = build_graph(model, vercel_tools(), trace)
         result = await graph.ainvoke(
             {"messages": [("user", f"Assess this role:\n\n{job_description}")]},
